@@ -89,4 +89,3 @@ def traduzir_imagens():
 
 if __name__ == "__main__":
     app.run(debug=True)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
