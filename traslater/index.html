@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Tradutor de Imagens do Site</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+        }
+        .container {
+            width: 50%;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #0b7dda;
+        }
+        .resultado {
+            margin-top: 25px;
+            padding: 20px;
+            background: #e8f4ff;
+            border-radius: 10px;
+        }
+        .imagem-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 1px 6px rgba(0,0,0,0.2);
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tradutor de Texto em Imagens</h1>
+
+        <label>URL da página que deseja analisar:</label>
+        <input type="text" id="url" placeholder="https://exemplo.com">
+
+        <label>Idioma para traduzir:</label>
+        <select id="idioma">
+            <option value="pt">Português (PT-BR)</option>
+            <option value="en">Inglês (EN)</option>
+            <option value="es">Espanhol (ES)</option>
+        </select>
+
+        <button onclick="traduzir()">Traduzir Imagens</button>
+
+        <div id="resultado"></div>
+    </div>
+
+<script>
+async function traduzir() {
+    const url = document.getElementById("url").value;
+    const idioma = document.getElementById("idioma").value;
+    const resultadoDiv = document.getElementById("resultado");
+
+    if (!url) {
+        alert("Por favor, insira uma URL!");
+        return;
+    }
+
+    resultadoDiv.innerHTML = `<p class="loading">Processando... Aguarde ⏳</p>`;
+
+    try {
+        const resposta = await fetch("http://127.0.0.1:5000/traduzir_imagens", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ url: url, idioma: idioma })
+        });
+
+        const dados = await resposta.json();
+
+        if (!dados.resultado || dados.resultado.length === 0) {
+            resultadoDiv.innerHTML = "<p>Nenhuma imagem com texto encontrada.</p>";
+            return;
+        }
+
+        let html = `<div class="resultado"><h2>Resultados</h2>`;
+
+        dados.resultado.forEach((item, index) => {
+            html += `
+                <div class="imagem-card">
+                    <h3>Imagem ${index + 1}</h3>
+                    <p><b>Texto original:</b> ${item.texto_original || "(nenhum texto detectado)"}</p>
+                    <p><b>Texto traduzido:</b> ${item.texto_traduzido}</p>
+                    <p><b>URL original da imagem:</b> <a href="${item.url_original}" target="_blank">${item.url_original}</a></p>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        resultadoDiv.innerHTML = html;
+
+    } catch (erro) {
+        resultadoDiv.innerHTML = "<p>Erro ao conectar ao servidor.</p>";
+        console.error(erro);
+    }
+}
+</script>
+
+</body>
+</html>
